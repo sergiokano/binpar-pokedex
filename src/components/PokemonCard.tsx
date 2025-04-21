@@ -1,4 +1,4 @@
-import { fetchPokemonDetails } from "@/lib/api";
+import { fetchPokemonDetails, fetchPokemonSpecies } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 type Props = {
@@ -7,9 +7,14 @@ type Props = {
 };
 
 export default function PokemonCard({ id, name }: Props) {
-  const { data } = useQuery({
+  const { data: details } = useQuery({
     queryKey: ["pokemon-details", name],
     queryFn: () => fetchPokemonDetails(name),
+  });
+
+  const { data: species } = useQuery({
+    queryKey: ["pokemon-species", name],
+    queryFn: () => fetchPokemonSpecies(name),
   });
 
   return (
@@ -18,8 +23,12 @@ export default function PokemonCard({ id, name }: Props) {
         #{id} {name}
       </p>
 
+      <p className="text-muted-foreground text-xs">
+        Generation: {species?.generation.replace("generation-", "").toUpperCase()}
+      </p>
+
       <div className="mt-2 flex flex-wrap gap-2">
-        {data?.types.map((type: string) => (
+        {details?.types.map((type: string) => (
           <span
             key={type}
             className="rounded bg-gray-200 px-2 py-1 text-xs capitalize"

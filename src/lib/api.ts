@@ -19,3 +19,13 @@ export async function fetchPokemonDetails(name: string) {
     types: data.types.map((t: any) => t.type.name),
   };
 }
+
+export async function fetchPokemonSpecies(name: string) {
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+  if (!res.ok) throw new Error("Error al cargar especie");
+  const data = await res.json();
+
+  return {
+    generation: data.generation.name,
+  };
+}
