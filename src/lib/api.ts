@@ -9,3 +9,13 @@ export async function fetchPokemonBasicList(limit = 151) {
     name: pokemon.name,
   }));
 }
+
+export async function fetchPokemonDetails(name: string) {
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  if (!res.ok) throw new Error("Error al cargar detalles");
+  const data = await res.json();
+
+  return {
+    types: data.types.map((t: any) => t.type.name),
+  };
+}
