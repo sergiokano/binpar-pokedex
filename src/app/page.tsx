@@ -65,12 +65,13 @@ export default function HomePage() {
         generationFilter={generationFilter}
         onGenerationFilter={setGenerationFilter}
       />
-
-      <section className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-        {filtered?.map((pokemon: any) => (
-          <PokemonCard key={pokemon.id} {...pokemon} />
-        ))}
-      </section>
+      <div className="w-full ">
+        <section className="grid grid-cols-[repeat(auto-fill,_minmax(220px,_1fr))] gap-6">
+          {filtered?.map((pokemon: any) => (
+            <PokemonCard key={pokemon.id} {...pokemon} />
+          ))}
+        </section>
+      </div>
     </main>
   );
 }

@@ -23,6 +23,7 @@ export async function fetchPokemonDetails(name: string) {
 
   return {
     types: data.types.map((t: any) => t.type.name),
+    sprite: data.sprites.other["official-artwork"].front_default,
   };
 }
 
