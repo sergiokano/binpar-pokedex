@@ -16,7 +16,6 @@ export default function HomePage() {
   const [generationFilter, setGenerationFilter] = useState("");
   const [extraResults, setExtraResults] = useState<any[]>([]);
 
-  // 🧠 Fetch Pokémon extra si hacen match por nombre/evolución y no están ya en el listado
   useEffect(() => {
     if (!search || !fullIndex || !visiblePokemon) return;
 
