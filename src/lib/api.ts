@@ -36,39 +36,62 @@ export async function fetchPokemonSpecies(name: string) {
   };
 }
 
+export async function fetchPokemonByName(name: string) {
+  const [detailsRes, speciesRes] = await Promise.all([
+    fetch(`${BASE_URL}/pokemon/${name}`),
+    fetch(`${BASE_URL}/pokemon-species/${name}`),
+  ]);
+
+  if (!detailsRes.ok || !speciesRes.ok)
+    throw new Error("Error al cargar Pokémon");
+
+  const details = await detailsRes.json();
+  const species = await speciesRes.json();
+
+  return {
+    id: details.id,
+    name: details.name,
+    types: details.types.map((t: any) => t.type.name),
+    generation: species.generation.name || "unknown",
+  };
+}
+
 export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
-  const res = await fetch(`${BASE_URL}/pokemon?limit=100000`);
-  const data = await res.json();
-
-  const speciesList: { name: string; url: string }[] = data.results;
-
   const index: PokemonIndexed[] = [];
 
-  for (const species of speciesList) {
+  const evoChainRes = await fetch(`${BASE_URL}/evolution-chain`);
+  const evoChainData = await evoChainRes.json();
+  const evoChainUrls: string[] = evoChainData.results.map(
+    (chain: any) => chain.url,
+  );
+  for (const url of evoChainUrls) {
     try {
-      const resSpecie = await fetch(species.url);
-      const speciesData = await resSpecie.json();
+      const res = await fetch(url);
+      const evoData = await res.json();
+      const family = extractEvolutionNames(evoData.chain);
 
-const generation = speciesData.generation?.name || "unknown";
-const evoUrl = speciesData.evolution_chain?.url ;
+      await Promise.all(
+        family.map(async (name) => {
+          try {
+            const resSpecies = await fetch(
+              `${BASE_URL}/pokemon-species/${name}`,
+            );
+            const speciesData = await resSpecies.json();
+            const generation = speciesData.generation.name || "unknown";
 
-if(!evoUrl) continue;
-
-const resEvo = await fetch(evoUrl);
-
-const evoData = await resEvo.json();
-
-const family = extractEvolutionNames(evoData.chain);  
-family.forEach(name => {
-  index.push({
-    name,
-    generation,
-    family,
-  });
-}
-  } catch (error) {
-    console.error(`Error fetching species data for ${species.name}:`, error);
-  }
+            index.push({
+              name,
+              generation,
+              family,
+            });
+          } catch (error) {
+            console.error(`Error fetching species for ${name}:`, error);
+          }
+        }),
+      );
+    } catch (error) {
+      console.error(`Error fetching evolution chain from ${url}:`, error);
+    }
   }
   return index;
 }
