@@ -1,61 +1,59 @@
 "use client";
 
-import { usePokemonList } from "@/hooks/usePokemonList";
 import PokemonCard from "@/components/PokemonCard";
-import { useEffect, useState } from "react";
 import FilterBar from "@/components/FilterBar";
 import { useFullPokemonIndex } from "@/hooks/useFullPokemonIndex";
-import { normalizePokemonData } from "@/lib/api";
+import { useInfinitePokemon } from "@/hooks/useInfiniteQuery";
+import { useEffect, useRef, useState } from "react";
 
 export default function HomePage() {
-  const { data: visiblePokemon, isLoading, error } = usePokemonList();
-  const { data: fullIndex, isLoading: isIndexLoading } = useFullPokemonIndex();
+  const { data: fullIndex } = useFullPokemonIndex();
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfinitePokemon();
+  const observerRef = useRef(null);
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [generationFilter, setGenerationFilter] = useState("");
-  const [extraResults, setExtraResults] = useState<any[]>([]);
 
+  // IntersectionObserver para cargar más cuando haces scroll
   useEffect(() => {
-    if (!search || !fullIndex || !visiblePokemon) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting && hasNextPage) {
+        fetchNextPage();
+      }
+    });
 
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [hasNextPage, fetchNextPage]);
+
+  const allPokemons = data?.pages.flat() ?? [];
+
+  const filteredPokemons = allPokemons.filter((p) => {
     const searchTerm = search.toLowerCase();
-    const matching = fullIndex.filter((p) =>
-      p.family.some((n) => n.includes(searchTerm)),
-    );
 
-    const names = matching.map((p) => p.name);
-    const newOnes = names.filter(
-      (name) => !visiblePokemon.some((p) => p.name === name),
-    );
+    const nameMatch = p.name.toLowerCase().includes(searchTerm);
 
-    Promise.all(newOnes.map(normalizePokemonData))
-      .then(setExtraResults)
-      .catch(console.error);
-  }, [search, fullIndex, visiblePokemon]);
-
-  const allPokemon = [...(visiblePokemon || []), ...extraResults];
-
-  const filtered = allPokemon.filter((p) => {
-    console.log("checking", p);
-
-    const nameMatch = p.name.toLowerCase().includes(search.toLowerCase());
     const familyMatch =
       fullIndex
         ?.find((f) => f.name === p.name)
-        ?.family.some((n) => n.includes(search.toLowerCase())) ?? false;
-    console.log(p.types, p.generation);
-    const typeMatch = typeFilter ? p.types?.includes(typeFilter) : true;
+        ?.family.some((n) => n.includes(searchTerm)) ?? false;
+
+    const typeMatch = typeFilter ? p.types.includes(typeFilter) : true;
     const genMatch = generationFilter
-      ? p.generation?.toLowerCase() === generationFilter.toLowerCase()
+      ? p.generation === generationFilter
       : true;
 
     return (nameMatch || familyMatch) && typeMatch && genMatch;
   });
 
-  if (isLoading) return <p>Cargando Pokédex...</p>;
-  if (isIndexLoading) return <p>Cargando Pokédex completo...</p>;
-  if (error) return <p>Error al cargar los Pokémon.</p>;
 
   return (
     <main className="p-6">
@@ -67,13 +65,17 @@ export default function HomePage() {
         generationFilter={generationFilter}
         onGenerationFilter={setGenerationFilter}
       />
-      <div className="w-full">
-        <section className="grid grid-cols-[repeat(auto-fill,_minmax(220px,_1fr))] gap-6">
-          {filtered?.map((pokemon: any) => (
-            <PokemonCard key={pokemon.id} {...pokemon} />
-          ))}
-        </section>
-      </div>
+      <div className="w-full"></div>
+      <section className="grid grid-cols-[repeat(auto-fill,_minmax(220px,_1fr))] gap-6">
+        {filteredPokemons.map((pokemon) => (
+          <PokemonCard key={pokemon.id} {...pokemon} />
+        ))}
+      </section>
+
+      <div ref={observerRef} className="h-10" />
+      {isFetchingNextPage && (
+        <p className="mt-4 text-center">Cargando más Pokémon...</p>
+      )}
     </main>
   );
 }
