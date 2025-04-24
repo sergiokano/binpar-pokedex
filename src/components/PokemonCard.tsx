@@ -14,7 +14,8 @@ export default function PokemonCard({
   generation,
 }: Props) {
   return (
-    <div className="group relative rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-100 p-4 shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-xl">
+    <div className="group relative rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-100 p-4 shadow-md transition-all
+ duration-300 hover:scale-105 hover:shadow-xl">
       <div className="flex flex-col items-center">
         <img
           src={sprite}
