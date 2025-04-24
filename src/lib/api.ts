@@ -6,45 +6,74 @@ export type PokemonIndexed = {
   family: string[];
 };
 
-export async function fetchPokemonBasicList(limit = 151) {
-  const res = await fetch(`${BASE_URL}/pokemon?limit=${limit}`);
-  const data = await res.json();
+// export async function fetchPokemonBasicList(limit = 151) {
+//   const res = await fetch(`${BASE_URL}/pokemon?limit=${limit}`);
+//   const data = await res.json();
 
-  return data.results.map((pokemon: any, index: number) => ({
-    id: index + 1,
-    name: pokemon.name,
-  }));
+//   return data.results.map((pokemon: any, index: number) => ({
+//     id: index + 1,
+//     name: pokemon.name,
+//   }));
+// }
+
+// export async function fetchPokemonDetails(name: string) {
+//   const res = await fetch(`${BASE_URL}/pokemon/${name}`);
+//   if (!res.ok) throw new Error("Error al cargar detalles");
+//   const data = await res.json();
+
+//   return {
+//     types: data.types.map((t: any) => t.type.name),
+//     sprite: data.sprites.other["official-artwork"].front_default,
+//   };
+// }
+
+// export async function fetchPokemonSpecies(name: string) {
+//   const res = await fetch(`${BASE_URL}/pokemon-species/${name}`);
+//   if (!res.ok) throw new Error("Error al cargar especie");
+//   const data = await res.json();
+
+//   return {
+//     generation: data.generation.name,
+//   };
+// }
+
+// export async function fetchPokemonByName(name: string) {
+//   const [detailsRes, speciesRes] = await Promise.all([
+//     fetch(`${BASE_URL}/pokemon/${name}`),
+//     fetch(`${BASE_URL}/pokemon-species/${name}`),
+//   ]);
+
+//   if (!detailsRes.ok || !speciesRes.ok)
+//     throw new Error("Error al cargar Pokémon");
+
+//   const details = await detailsRes.json();
+//   const species = await speciesRes.json();
+
+//   return {
+//     id: details.id,
+//     name: details.name,
+//     types: details.types.map((t: any) => t.type.name),
+//     generation: species.generation.name || "unknown",
+//   };
+// }
+// src/lib/api.ts
+
+export async function fetchPokemonNames(limit = 151): Promise<string[]> {
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}`);
+  if (!res.ok) throw new Error("Error al obtener lista de Pokémon");
+  const data = await res.json();
+  return data.results.map((p: any) => p.name);
 }
 
-export async function fetchPokemonDetails(name: string) {
-  const res = await fetch(`${BASE_URL}/pokemon/${name}`);
-  if (!res.ok) throw new Error("Error al cargar detalles");
-  const data = await res.json();
-
-  return {
-    types: data.types.map((t: any) => t.type.name),
-    sprite: data.sprites.other["official-artwork"].front_default,
-  };
-}
-
-export async function fetchPokemonSpecies(name: string) {
-  const res = await fetch(`${BASE_URL}/pokemon-species/${name}`);
-  if (!res.ok) throw new Error("Error al cargar especie");
-  const data = await res.json();
-
-  return {
-    generation: data.generation.name,
-  };
-}
-
-export async function fetchPokemonByName(name: string) {
+export async function normalizePokemonData(name: string) {
   const [detailsRes, speciesRes] = await Promise.all([
     fetch(`${BASE_URL}/pokemon/${name}`),
     fetch(`${BASE_URL}/pokemon-species/${name}`),
   ]);
 
-  if (!detailsRes.ok || !speciesRes.ok)
-    throw new Error("Error al cargar Pokémon");
+  if (!detailsRes.ok || !speciesRes.ok) {
+    throw new Error("Error al cargar datos del Pokémon");
+  }
 
   const details = await detailsRes.json();
   const species = await speciesRes.json();
@@ -53,6 +82,7 @@ export async function fetchPokemonByName(name: string) {
     id: details.id,
     name: details.name,
     types: details.types.map((t: any) => t.type.name),
+    sprite: details.sprites.other["official-artwork"].front_default,
     generation: species.generation.name || "unknown",
   };
 }
