@@ -1,78 +1,35 @@
+import type { NormalizedPokemon, PokemonIndexed } from "./types";
+
 const BASE_URL = "https://pokeapi.co/api/v2";
 
-export type PokemonIndexed = {
-  name: string;
-  generation: string;
-  family: string[];
-};
 
-// export async function fetchPokemonBasicList(limit = 151) {
-//   const res = await fetch(`${BASE_URL}/pokemon?limit=${limit}`);
-//   const data = await res.json();
-
-//   return data.results.map((pokemon: any, index: number) => ({
-//     id: index + 1,
-//     name: pokemon.name,
-//   }));
-// }
-
-// export async function fetchPokemonDetails(name: string) {
-//   const res = await fetch(`${BASE_URL}/pokemon/${name}`);
-//   if (!res.ok) throw new Error("Error al cargar detalles");
-//   const data = await res.json();
-
-//   return {
-//     types: data.types.map((t: any) => t.type.name),
-//     sprite: data.sprites.other["official-artwork"].front_default,
-//   };
-// }
-
-// export async function fetchPokemonSpecies(name: string) {
-//   const res = await fetch(`${BASE_URL}/pokemon-species/${name}`);
-//   if (!res.ok) throw new Error("Error al cargar especie");
-//   const data = await res.json();
-
-//   return {
-//     generation: data.generation.name,
-//   };
-// }
-
-// export async function fetchPokemonByName(name: string) {
-//   const [detailsRes, speciesRes] = await Promise.all([
-//     fetch(`${BASE_URL}/pokemon/${name}`),
-//     fetch(`${BASE_URL}/pokemon-species/${name}`),
-//   ]);
-
-//   if (!detailsRes.ok || !speciesRes.ok)
-//     throw new Error("Error al cargar Pokémon");
-
-//   const details = await detailsRes.json();
-//   const species = await speciesRes.json();
-
-//   return {
-//     id: details.id,
-//     name: details.name,
-//     types: details.types.map((t: any) => t.type.name),
-//     generation: species.generation.name || "unknown",
-//   };
-// }
-// src/lib/api.ts
-
-export async function fetchPokemonNames(limit = 151): Promise<string[]> {
+export async function fetchPokemonNames(limit = 1300): Promise<string[]> {
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}`);
   if (!res.ok) throw new Error("Error al obtener lista de Pokémon");
   const data = await res.json();
   return data.results.map((p: any) => p.name);
 }
 
-export async function normalizePokemonData(name: string) {
-  const [detailsRes, speciesRes] = await Promise.all([
-    fetch(`${BASE_URL}/pokemon/${name}`),
-    fetch(`${BASE_URL}/pokemon-species/${name}`),
-  ]);
+async function fetchPokemonGeneration(family: string): Promise<string> {
+  const res = await fetch(`${BASE_URL}/pokemon-species/${family}`);
+  if (!res.ok) return "unknown";
+  const data = await res.json();
+  return data.generation?.name || "unknown";
+}
 
-  if (!detailsRes.ok || !speciesRes.ok) {
-    throw new Error("Error al cargar datos del Pokémon");
+export async function normalizePokemonData(
+  name: string,
+): Promise<NormalizedPokemon> {
+  const detailsRes = await fetch(`${BASE_URL}/pokemon/${name}`);
+  if (!detailsRes.ok) {
+    console.warn(`❌ Error en /pokemon/${name}`);
+    throw new Error("Error al cargar detalles del Pokémon");
+  }
+
+  const speciesRes = await tryFetchSpecies(name);
+  if (!speciesRes.ok) {
+    console.warn(`❌ Error en /pokemon-species/${name} y su fallback`);
+    throw new Error("Error al cargar especie del Pokémon");
   }
 
   const details = await detailsRes.json();
@@ -83,14 +40,20 @@ export async function normalizePokemonData(name: string) {
     name: details.name,
     types: details.types.map((t: any) => t.type.name),
     sprite: details.sprites.other["official-artwork"].front_default,
-    generation: species.generation.name || "unknown",
+    generation: species.generation?.name || "unknown",
   };
+}
+
+async function tryFetchSpecies(name: string): Promise<Response> {
+  const res = await fetch(`${BASE_URL}/pokemon-species/${name}`);
+  if (res.ok) return res;
 }
 
 export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
   const index: PokemonIndexed[] = [];
 
-  const evoChainRes = await fetch(`${BASE_URL}/evolution-chain`);
+  const evoChainRes = await fetch(`${BASE_URL}/evolution-chain?limit=500`);
+  console.log("evoChainRes", evoChainRes);
   const evoChainData = await evoChainRes.json();
   const evoChainUrls: string[] = evoChainData.results.map(
     (chain: any) => chain.url,
@@ -101,15 +64,18 @@ export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
       const evoData = await res.json();
       const family = extractEvolutionNames(evoData.chain);
 
+      console.log("family", family);
+
       await Promise.all(
         family.map(async (name) => {
-          try {
-            const resSpecies = await fetch(
-              `${BASE_URL}/pokemon-species/${name}`,
-            );
-            const speciesData = await resSpecies.json();
-            const generation = speciesData.generation.name || "unknown";
+          const generation = await fetchPokemonGeneration(name);
 
+          try {
+            // const resSpecies = await fetch(
+            //   `${BASE_URL}/pokemon-species/${name}`,
+            // );
+            const resSpecies = "unknow";
+            // const speciesData = await resSpecies.json();
             index.push({
               name,
               generation,
