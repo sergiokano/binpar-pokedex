@@ -52,7 +52,6 @@ export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
   const index: PokemonIndexed[] = [];
 
   const evoChainRes = await fetch(`${BASE_URL}/evolution-chain?limit=500`);
-  console.log("evoChainRes", evoChainRes);
   const evoChainData = await evoChainRes.json();
   const evoChainUrls: string[] = evoChainData.results.map(
     (chain: any) => chain.url,
@@ -62,8 +61,6 @@ export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
       const res = await fetch(url);
       const evoData = await res.json();
       const family = extractEvolutionNames(evoData.chain);
-
-      console.log("family", family);
 
       await Promise.all(
         family.map(async (name) => {

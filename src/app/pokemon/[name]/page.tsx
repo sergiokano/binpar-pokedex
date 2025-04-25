@@ -1,33 +1,36 @@
-import { getPokemonDetail } from "@/lib/api";
-import { typeColors } from "@/lib/pokemonStyles";
-import {
-  generationTranslations,
-  statTranslations,
-  typeTranslations,
-} from "@/lib/translations";
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import Image from "next/image";
+import { getPokemonDetail } from "@/lib/api";
+import SkeletonPokemonPage from "@/components/Skeleton/SkeletonPokemonPage/SkeletonPokemonPage";
+import { generationTranslations, typeTranslations } from "@/lib/translations";
+import { typeColors } from "@/lib/pokemonStyles";
 
-export default async function PokemonPage({
-  params,
-}: {
-  params: { name: string };
-}) {
-  const pokemon = await getPokemonDetail(params.name).catch(() => null);
-  console.log(pokemon);
+export default function PokemonPage() {
+  const { name } = useParams() as { name: string };
+  const [pokemon, setPokemon] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!pokemon) return notFound();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    getPokemonDetail(name)
+      .then((data) => setPokemon(data))
+      .catch(() => setPokemon(null))
+      .finally(() =>
+        setTimeout(() => {
+          setLoading(false);
+        }, 1000),
+      );
+  }, [name]);
+
+  if (loading || !pokemon) return <SkeletonPokemonPage />;
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
-      <Link
-        href="/"
-        className="mb-8 inline-block text-sm text-indigo-600 hover:underline"
-      >
-        ← Volver al listado
-      </Link>
-
+    <main className="mx-auto max-w-6xl px-6 py-12">
       <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-lg">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-[200px_1fr]">
           <div className="flex justify-center">
@@ -69,7 +72,7 @@ export default async function PokemonPage({
               Evoluciones
             </h2>
             <div className="flex flex-wrap gap-5">
-              {pokemon.evolutions.map((evo) => (
+              {pokemon.evolutions.map((evo: any) => (
                 <Link
                   href={`/pokemon/${evo.name}`}
                   key={evo.name}
@@ -102,16 +105,14 @@ export default async function PokemonPage({
             Estadísticas
           </h2>
           <div className="space-y-3">
-            {pokemon.stats.map((s) => (
+            {pokemon.stats.map((s: any) => (
               <div key={s.name} className="flex items-center gap-4 text-sm">
                 <span className="w-24 text-right text-zinc-600 capitalize">
-                  {statTranslations[s.name] ?? s.name}
+                  {s.name}
                 </span>
                 <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-zinc-100">
                   <div
-                    className={`h-full rounded-full bg-indigo-500 transition-all duration-700 ease-out ${
-                      typeColors[s.name] ?? "bg-gray-200 text-gray-700"
-                    }`}
+                    className="h-full rounded-full bg-indigo-500 transition-all duration-700 ease-out"
                     style={{ width: `${Math.min(s.value, 100)}%` }}
                   ></div>
                 </div>
