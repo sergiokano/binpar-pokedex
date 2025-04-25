@@ -1,5 +1,6 @@
 "use client";
 
+import { typeColors } from "@/lib/pokemonStyles";
 import { typeTranslations } from "@/lib/translations";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -50,7 +51,9 @@ export default function PokemonCard({
             {types.map((type) => (
               <span
                 key={type}
-                className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-700 capitalize"
+                className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${
+                  typeColors[type] ?? "bg-gray-200 text-gray-700"
+                }`}
               >
                 {typeTranslations[type] ?? type}
               </span>

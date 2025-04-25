@@ -1,4 +1,5 @@
 import { getPokemonDetail } from "@/lib/api";
+import { typeColors } from "@/lib/pokemonStyles";
 import {
   generationTranslations,
   statTranslations,
@@ -51,7 +52,9 @@ export default async function PokemonPage({
               {pokemon.types.map((type) => (
                 <span
                   key={type}
-                  className="rounded-full bg-indigo-100 px-4 py-1 text-sm font-medium text-indigo-700 capitalize"
+                  className={`rounded-full px-4 py-1 text-sm font-medium text-indigo-700 capitalize ${
+                    typeColors[type] ?? "bg-gray-200 text-gray-700"
+                  }`}
                 >
                   {typeTranslations[type] ?? type.replace("-", " ")}
                 </span>
@@ -106,7 +109,9 @@ export default async function PokemonPage({
                 </span>
                 <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-zinc-100">
                   <div
-                    className="h-full rounded-full bg-indigo-500 transition-all duration-700 ease-out"
+                    className={`h-full rounded-full bg-indigo-500 transition-all duration-700 ease-out ${
+                      typeColors[s.name] ?? "bg-gray-200 text-gray-700"
+                    }`}
                     style={{ width: `${Math.min(s.value, 100)}%` }}
                   ></div>
                 </div>

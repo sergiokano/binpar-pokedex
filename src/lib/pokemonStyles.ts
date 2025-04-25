@@ -1,0 +1,23 @@
+// lib/pokemonStyles.ts
+export const typeColors: Record<string, string> = {
+  normal: "bg-gray-300 text-gray-800",
+  fighting: "bg-red-500 text-white",
+  flying: "bg-sky-300 text-sky-800",
+  poison: "bg-purple-400 text-white",
+  ground: "bg-yellow-500 text-yellow-900",
+  rock: "bg-yellow-700 text-white",
+  bug: "bg-lime-400 text-lime-900",
+  ghost: "bg-indigo-500 text-white",
+  steel: "bg-gray-500 text-white",
+  fire: "bg-orange-400 text-white",
+  water: "bg-blue-400 text-white",
+  grass: "bg-green-400 text-white",
+  electric: "bg-yellow-300 text-yellow-900",
+  psychic: "bg-pink-400 text-white",
+  ice: "bg-cyan-300 text-cyan-900",
+  dragon: "bg-indigo-700 text-white",
+  dark: "bg-gray-800 text-white",
+  fairy: "bg-pink-300 text-pink-900",
+  unknown: "bg-zinc-300 text-zinc-800",
+  shadow: "bg-zinc-700 text-white",
+};
