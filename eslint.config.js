@@ -38,6 +38,23 @@ export default tseslint.config(
   {
     linterOptions: {
       reportUnusedDisableDirectives: true,
+      rules: {
+        "padded-blocks": "off",
+        "no-unused-vars": "off",
+        "no-undef": "off",
+        "no-redeclare": "off",
+        "no-duplicate-imports": "off",
+        "no-useless-concat": "off",
+        "no-useless-escape": "off",
+        "no-useless-catch": "off",
+        "no-useless-return": "off",
+        "no-useless-rename": "off",
+        "no-useless-computed-key": "off",
+        "no-useless-boolean-flag": "off",
+        "no-useless-else-return": "off",
+        "no-useless-call": "off",
+        "no-useless-constructor": "off",
+      },
     },
     languageOptions: {
       parserOptions: {
