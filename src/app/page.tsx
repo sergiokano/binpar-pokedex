@@ -31,7 +31,7 @@ export default function HomePage() {
 
   const isFiltering = search || typeFilter || generationFilter;
 
-  const [isTransitioningFilter, setIsTransitioningFilter] = useState(false);
+  const [isTransitioningFilter, setIsTransitioningFilter] = useState(true);
   const [isCardLoading, setIsCardLoading] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
