@@ -18,7 +18,7 @@ export default function Navbar() {
             priority
           />
           <span className="text-xl font-semibold tracking-tight text-zinc-800">
-            Inpar Pokédex
+            Binpar Pokédex
           </span>
         </Link>
 
