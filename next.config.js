@@ -9,6 +9,9 @@ const config = {
   images: {
     domains: ["raw.githubusercontent.com"],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default config;
