@@ -14,7 +14,12 @@ import { loadFullPokedex } from "@/server/loadFullPokedex";
 
 export default function HomePage() {
   const { data: fullIndex } = useFullPokemonIndex();
-  const { data: pagedData, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfinitePokemon();
+  const {
+    data: pagedData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfinitePokemon();
   const observerRef = useRef(null);
   const { data: fullPokedex, isLoading: isFullLoading } = useQuery({
     queryKey: ["all-pokemon"],
@@ -27,12 +32,43 @@ export default function HomePage() {
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [typeFilter, setTypeFilter] = useState(searchParams.get("type") || "");
-  const [generationFilter, setGenerationFilter] = useState(searchParams.get("generation") || "");
+  const [generationFilter, setGenerationFilter] = useState(
+    searchParams.get("generation") || "",
+  );
 
   const isFiltering = search || typeFilter || generationFilter;
 
   const [isTransitioningFilter, setIsTransitioningFilter] = useState(true);
-  const [isCardLoading, setIsCardLoading] = useState<Record<number, boolean>>({});
+  const [isCardLoading, setIsCardLoading] = useState<Record<number, boolean>>(
+    {},
+  );
+
+  // Este efecto es SOLO para la primera carga si no hay filtros activos
+  useEffect(() => {
+    if (isFiltering || !fullPokedex) return;
+
+    setIsTransitioningFilter(true);
+
+    const initialTimeout = setTimeout(() => {
+      const loadingMap: Record<number, boolean> = {};
+      visiblePokemons.forEach((p) => (loadingMap[p.id] = true));
+      setIsCardLoading(loadingMap);
+
+      visiblePokemons.forEach((p, i) => {
+        setTimeout(() => {
+          setIsCardLoading((prev) => {
+            const updated = { ...prev };
+            delete updated[p.id];
+            return updated;
+          });
+        }, i * 40);
+      });
+
+      setIsTransitioningFilter(false);
+    }, 1); // Delay inicial para no mostrar contenido directo
+
+    return () => clearTimeout(initialTimeout);
+  }, [fullPokedex]); // Solo se dispara una vez cuando fullPokedex llega
 
   useEffect(() => {
     if (isFiltering) return;
@@ -57,9 +93,13 @@ export default function HomePage() {
     const searchTerm = search.toLowerCase();
     const nameMatch = p.name.toLowerCase().includes(searchTerm);
     const familyMatch =
-      fullIndex?.find((f) => f.name === p.name)?.family.some((n) => n.includes(searchTerm)) ?? false;
+      fullIndex
+        ?.find((f) => f.name === p.name)
+        ?.family.some((n) => n.includes(searchTerm)) ?? false;
     const typeMatch = typeFilter ? p.types.includes(typeFilter) : true;
-    const genMatch = generationFilter ? p.generation === generationFilter : true;
+    const genMatch = generationFilter
+      ? p.generation === generationFilter
+      : true;
     return (nameMatch || familyMatch) && typeMatch && genMatch;
   });
 
@@ -99,17 +139,23 @@ export default function HomePage() {
         search={search}
         onSearch={(val) => {
           setSearch(val);
-          router.replace(`/?search=${val}&type=${typeFilter}&generation=${generationFilter}`);
+          router.replace(
+            `/?search=${val}&type=${typeFilter}&generation=${generationFilter}`,
+          );
         }}
         typeFilter={typeFilter}
         onTypeFilter={(val) => {
           setTypeFilter(val);
-          router.replace(`/?search=${search}&type=${val}&generation=${generationFilter}`);
+          router.replace(
+            `/?search=${search}&type=${val}&generation=${generationFilter}`,
+          );
         }}
         generationFilter={generationFilter}
         onGenerationFilter={(val) => {
           setGenerationFilter(val);
-          router.replace(`/?search=${search}&type=${typeFilter}&generation=${val}`);
+          router.replace(
+            `/?search=${search}&type=${typeFilter}&generation=${val}`,
+          );
         }}
       />
 
@@ -122,7 +168,7 @@ export default function HomePage() {
               <SkeletonPokemonCard key={`skeleton-${pokemon.id}`} />
             ) : (
               <PokemonCard key={pokemon.id} {...pokemon} />
-            )
+            ),
           )
         )}
       </section>
@@ -130,7 +176,9 @@ export default function HomePage() {
       {!isFiltering && (
         <>
           <div ref={observerRef} className="h-10" />
-          {isFetchingNextPage && <p className="mt-4 text-center">Cargando más Pokémon...</p>}
+          {isFetchingNextPage && (
+            <p className="mt-4 text-center">Cargando más Pokémon...</p>
+          )}
         </>
       )}
     </main>
