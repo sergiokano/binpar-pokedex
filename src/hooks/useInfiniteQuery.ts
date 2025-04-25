@@ -20,7 +20,7 @@ export function useInfinitePokemon() {
       return pokemons.filter(Boolean);
     },
     getNextPageParam: (_, allPages) => allPages.length * PAGE_SIZE,
-    initialPageParam: 0, // ✅ ESTE ES EL QUE FALTABA
+    initialPageParam: 0, 
     staleTime: Infinity,
   });
 }
