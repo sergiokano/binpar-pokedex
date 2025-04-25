@@ -31,10 +31,6 @@ export default function PokemonPage() {
       );
   }, [name]);
 
-  useEffect(() => {
-    console.log("Pokemon data:", pokemon);
-  }, [pokemon]);
-
   if (loading || !pokemon) return <SkeletonPokemonPage />;
 
   return (
