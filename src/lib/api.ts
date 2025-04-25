@@ -2,9 +2,8 @@ import type { NormalizedPokemon, PokemonIndexed } from "./types";
 
 const BASE_URL = "https://pokeapi.co/api/v2";
 
-
 export async function fetchPokemonNames(limit = 1300): Promise<string[]> {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}`);
+  const res = await fetch(`${BASE_URL}/pokemon?limit=${limit}`);
   if (!res.ok) throw new Error("Error al obtener lista de Pokémon");
   const data = await res.json();
   return data.results.map((p: any) => p.name);
@@ -103,4 +102,51 @@ function extractEvolutionNames(chain: any): string[] {
   }
   traverseEvolutions(chain);
   return names;
+}
+
+export async function getPokemonDetail(name: string) {
+  const [res, speciesRes] = await Promise.all([
+    fetch(`${BASE_URL}/pokemon/${name}`),
+    fetch(`${BASE_URL}/pokemon-species/${name}`),
+  ]);
+  const data = await res.json();
+  const species = await speciesRes.json();
+
+  const evoRes = await fetch(species.evolution_chain.url);
+  const evoChain = await evoRes.json();
+
+  const evolutions = extractEvolutionChainWithSprites(evoChain.chain);
+
+  return {
+    id: data.id,
+    name: data.name,
+    sprite: data.sprites.other["official-artwork"].front_default,
+    generation: species.generation.name,
+    types: data.types.map((t: any) => t.type.name),
+    stats: data.stats.map((s: any) => ({
+      name: s.stat.name,
+      value: s.base_stat,
+    })),
+    evolutions: evolutions ?? [],
+  };
+}
+function extractEvolutionChainWithSprites(chain: any) {
+  const evolutions: { name: string; sprite: string }[] = [];
+
+  async function getSprite(name: string) {
+    const res = await fetch(`${BASE_URL}/pokemon/${name}`);
+    const data = await res.json();
+    return data.sprites.other["official-artwork"].front_default;
+  }
+
+  async function traverse(node: any) {
+    const name = node.species.name;
+    const sprite = await getSprite(name);
+    evolutions.push({ name, sprite });
+    for (const evo of node.evolves_to) {
+      await traverse(evo);
+    }
+  }
+
+  return traverse(chain).then(() => evolutions);
 }
