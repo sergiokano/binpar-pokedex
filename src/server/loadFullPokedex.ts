@@ -3,8 +3,8 @@
 import type { NormalizedPokemon } from "@/lib/types";
 import { fetchPokemonNames } from "@/lib/api";
 import pLimit from "p-limit";
+import { BASE_URL } from "@/lib/constants";
 
-const BASE_URL = "https://pokeapi.co/api/v2";
 let cache: NormalizedPokemon[] | null = null;
 
 export async function loadFullPokedex(): Promise<NormalizedPokemon[]> {
