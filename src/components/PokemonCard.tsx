@@ -1,5 +1,6 @@
 "use client";
 
+import { typeTranslations } from "@/lib/translations";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -51,7 +52,7 @@ export default function PokemonCard({
                 key={type}
                 className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-700 capitalize"
               >
-                {type}
+                {typeTranslations[type] ?? type}
               </span>
             ))}
           </div>
