@@ -14,7 +14,7 @@ import {
 import { typeColors } from "@/lib/pokemonStyles";
 
 export default function PokemonPage() {
-  const { name } = useParams() as { name: string };
+  const { name } = useParams();
   const [pokemon, setPokemon] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

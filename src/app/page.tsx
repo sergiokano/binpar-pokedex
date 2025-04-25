@@ -21,7 +21,7 @@ export default function HomePage() {
     isFetchingNextPage,
   } = useInfinitePokemon();
   const observerRef = useRef(null);
-  const { data: fullPokedex, isLoading: isFullLoading } = useQuery({
+  const { data: fullPokedex } = useQuery({
     queryKey: ["all-pokemon"],
     queryFn: loadFullPokedex,
     staleTime: Infinity,
@@ -65,10 +65,10 @@ export default function HomePage() {
       });
 
       setIsTransitioningFilter(false);
-    }, 1); // Delay inicial para no mostrar contenido directo
+    }, 1); 
 
     return () => clearTimeout(initialTimeout);
-  }, [fullPokedex]); // Solo se dispara una vez cuando fullPokedex llega
+  }, [fullPokedex]);
 
   useEffect(() => {
     if (isFiltering) return;

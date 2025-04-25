@@ -16,7 +16,7 @@ export async function loadFullPokedex(): Promise<NormalizedPokemon[]> {
   const all = await Promise.all(
     names.map((name) => limit(() => normalizePokemonData(name))),
   );
-  const filtered = all.filter((p) => p !== null) as NormalizedPokemon[];
+  const filtered = all.filter((p) => p !== null);
   cache = filtered; // guarda en caché
   return filtered; // devuelve el pokédex completo
 }
