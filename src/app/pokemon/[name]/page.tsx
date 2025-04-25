@@ -6,7 +6,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPokemonDetail } from "@/lib/api";
 import SkeletonPokemonPage from "@/components/Skeleton/SkeletonPokemonPage/SkeletonPokemonPage";
-import { generationTranslations, typeTranslations } from "@/lib/translations";
+import {
+  generationTranslations,
+  statTranslations,
+  typeTranslations,
+} from "@/lib/translations";
 import { typeColors } from "@/lib/pokemonStyles";
 
 export default function PokemonPage() {
@@ -26,6 +30,10 @@ export default function PokemonPage() {
         }, 1000),
       );
   }, [name]);
+
+  useEffect(() => {
+    console.log("Pokemon data:", pokemon);
+  }, [pokemon]);
 
   if (loading || !pokemon) return <SkeletonPokemonPage />;
 
@@ -108,7 +116,7 @@ export default function PokemonPage() {
             {pokemon.stats.map((s: any) => (
               <div key={s.name} className="flex items-center gap-4 text-sm">
                 <span className="w-24 text-right text-zinc-600 capitalize">
-                  {s.name}
+                  {statTranslations[s.name] ?? s.name.replace("-", " ")}
                 </span>
                 <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-zinc-100">
                   <div
