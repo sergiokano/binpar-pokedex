@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar/Navbar";
 import { QueryProvider } from "@/components/providers/QueryProviders";
 import "@/styles/globals.css";
 import { type Metadata } from "next";
@@ -20,6 +21,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`}>
       <body>
+        <Navbar />
+
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

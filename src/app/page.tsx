@@ -6,8 +6,8 @@ import { useInfinitePokemon } from "@/hooks/useInfiniteQuery";
 import { useFullPokemonIndex } from "@/hooks/useFullPokemonIndex";
 import { useQuery } from "@tanstack/react-query";
 
-import FilterBar from "@/components/FilterBar";
-import PokemonCard from "@/components/PokemonCard";
+import FilterBar from "@/components/FilterBar/FilterBar";
+import PokemonCard from "@/components/PokemonCard/PokemonCard";
 import SkeletonPokemonCard from "@/components/Skeleton/SkeletonPokemonCard/SkeletonPokemonCard";
 import SkeletonPokemonCards from "@/components/Skeleton/SkeletonPokemonCard/SkeletonPokemonCards";
 import { loadFullPokedex } from "@/server/loadFullPokedex";
