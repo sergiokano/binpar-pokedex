@@ -29,14 +29,30 @@ export default function HomePage() {
 
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [typeFilter, setTypeFilter] = useState(searchParams.get("type") || "");
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [typeFilter, setTypeFilter] = useState(searchParams.get("type") ?? "");
   const [generationFilter, setGenerationFilter] = useState(
-    searchParams.get("generation") || "",
+    searchParams.get("generation") ?? "",
   );
 
-  const isFiltering = search || typeFilter || generationFilter;
+  const isFiltering = Boolean(search || typeFilter || generationFilter);
+
+  const visiblePokemons = pagedData?.pages.flat() ?? [];
+  const source = isFiltering ? (fullPokedex ?? []) : visiblePokemons;
+
+  const filteredPokemons = source.filter((p) => {
+    const searchTerm = search.toLowerCase();
+    const nameMatch = p.name.toLowerCase().includes(searchTerm);
+    const familyMatch =
+      fullIndex
+        ?.find((f) => f.name === p.name)
+        ?.family.some((n) => n.includes(searchTerm)) ?? false;
+    const typeMatch = typeFilter ? p.types.includes(typeFilter) : true;
+    const genMatch = generationFilter
+      ? p.generation === generationFilter
+      : true;
+    return (nameMatch || familyMatch) && typeMatch && genMatch;
+  });
 
   const [isTransitioningFilter, setIsTransitioningFilter] = useState(true);
   const [isCardLoading, setIsCardLoading] = useState<Record<number, boolean>>(
@@ -85,23 +101,6 @@ export default function HomePage() {
       if (observerRef.current) observer.unobserve(observerRef.current);
     };
   }, [hasNextPage, fetchNextPage, isFiltering]);
-
-  const visiblePokemons = pagedData?.pages.flat() ?? [];
-  const source = isFiltering ? (fullPokedex ?? []) : visiblePokemons;
-
-  const filteredPokemons = source.filter((p) => {
-    const searchTerm = search.toLowerCase();
-    const nameMatch = p.name.toLowerCase().includes(searchTerm);
-    const familyMatch =
-      fullIndex
-        ?.find((f) => f.name === p.name)
-        ?.family.some((n) => n.includes(searchTerm)) ?? false;
-    const typeMatch = typeFilter ? p.types.includes(typeFilter) : true;
-    const genMatch = generationFilter
-      ? p.generation === generationFilter
-      : true;
-    return (nameMatch || familyMatch) && typeMatch && genMatch;
-  });
 
   useEffect(() => {
     if (!search && !typeFilter && !generationFilter) return;
