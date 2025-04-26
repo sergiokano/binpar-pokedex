@@ -27,7 +27,7 @@ export default function PokemonPage() {
   // const { name } = useParams();
 
   const params = useParams();
-  const name = typeof params.name === "string" ? params.name : undefined;
+  const name = typeof params.name === "string" ? params.name : "";
   const [pokemon, setPokemon] = useState<Pokemon | null>(null);
   const [loading, setLoading] = useState(true);
 
