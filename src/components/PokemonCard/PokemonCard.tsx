@@ -5,13 +5,13 @@ import { typeTranslations } from "@/lib/translations";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-type Props = {
+interface Props {
   id: number;
   name: string;
   sprite: string;
   types: string[];
   generation: string;
-};
+}
 
 export default function PokemonCard({
   id,
@@ -36,7 +36,7 @@ export default function PokemonCard({
     <Link href={`/pokemon/${name}?${query}`}>
       <div className="group relative cursor-pointer rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-100 p-4 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl">
         {/* ID en esquina superior derecha */}
-        <span className="absolute right-2 top-2 rounded-full bg-white/80 px-2 py-1 text-xs font-semibold text-zinc-500 shadow-sm backdrop-blur">
+        <span className="absolute top-2 right-2 rounded-full bg-white/80 px-2 py-1 text-xs font-semibold text-zinc-500 shadow-sm backdrop-blur">
           #{id}
         </span>
 

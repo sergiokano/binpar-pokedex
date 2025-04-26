@@ -12,7 +12,9 @@ export function useInfinitePokemon() {
         `${BASE_URL}/pokemon?limit=${PAGE_SIZE}&offset=${pageParam}`,
       );
       const data = await res.json();
-      const names = data.results.map((p: any) => p.name);
+      const names = data.results.map(
+        (pokemon: { name: string }) => pokemon.name,
+      );
 
       const pokemons = await Promise.all(
         names.map((name: string) =>

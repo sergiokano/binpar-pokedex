@@ -37,7 +37,7 @@ export async function normalizePokemonData(
     id: details.id,
     name: details.name,
     sprite: details.sprites.other["official-artwork"].front_default,
-    types: details.types.map((t: any) => t.type.name),
+    types: details.types.map((t: { type: { name: string } }) => t.type.name),
     generation: species.generation?.name || "unknown",
   };
 }

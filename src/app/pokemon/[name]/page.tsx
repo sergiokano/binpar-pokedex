@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getPokemonDetail } from "@/lib/api";
@@ -12,17 +12,24 @@ import {
   typeTranslations,
 } from "@/lib/translations";
 import { typeColors } from "@/lib/pokemonStyles";
+import type { Pokemon } from "@/lib/types";
 
 export default function PokemonPage() {
-  const { name } = useParams();
-  const [pokemon, setPokemon] = useState<any>(null);
+  // const { name } = useParams();
+
+  const params = useParams();
+  const name = typeof params.name === "string" ? params.name : undefined;
+  const [pokemon, setPokemon] = useState<Pokemon | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const searchParams = useSearchParams();
-
   useEffect(() => {
+    setLoading(true);
+
     getPokemonDetail(name)
-      .then((data) => setPokemon(data))
+      .then(async (data) => {
+        const evolutions = await data.evolutions; // 👈 Esperar resolución
+        setPokemon({ ...data, evolutions });
+      })
       .catch(() => setPokemon(null))
       .finally(() =>
         setTimeout(() => {
@@ -31,6 +38,7 @@ export default function PokemonPage() {
       );
   }, [name]);
 
+  if (!name) return notFound();
   if (loading || !pokemon) return <SkeletonPokemonPage />;
 
   return (

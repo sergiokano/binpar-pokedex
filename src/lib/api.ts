@@ -6,7 +6,7 @@ export async function fetchPokemonNames(limit = 1300): Promise<string[]> {
   const res = await fetch(`${BASE_URL}/pokemon?limit=${limit}`);
   if (!res.ok) throw new Error("Error al obtener lista de Pokémon");
   const data = await res.json();
-  return data.results.map((p: any) => p.name);
+  return data.results.map((pokemon: { name: string }) => pokemon.name);
 }
 
 async function fetchPokemonGeneration(family: string): Promise<string> {

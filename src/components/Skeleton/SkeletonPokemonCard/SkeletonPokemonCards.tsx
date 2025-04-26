@@ -1,11 +1,11 @@
-import PokemonCard from "@/components/PokemonCard/PokemonCard";
 import SkeletonPokemonCard from "./SkeletonPokemonCard";
-
-type Props = {
+interface SkeletonPokemonCardProps {
   amount?: number;
-};
+}
 
-export default function SkeletonPokemonCards({ amount = 12 }: Props) {
+export default function SkeletonPokemonCards({
+  amount = 12,
+}: SkeletonPokemonCardProps) {
   return (
     <>
       {Array.from({ length: amount }).map((_, i) => (

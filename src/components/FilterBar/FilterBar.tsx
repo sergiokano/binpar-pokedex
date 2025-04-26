@@ -2,14 +2,14 @@
 
 import { typeTranslations } from "@/lib/translations";
 
-type Props = {
+interface Props {
   search: string;
   onSearch: (value: string) => void;
   typeFilter: string;
   onTypeFilter: (value: string) => void;
   generationFilter: string;
   onGenerationFilter: (value: string) => void;
-};
+}
 
 export default function FilterBar({
   search,

@@ -131,7 +131,7 @@ export default function HomePage() {
       setIsCardLoading({});
       setIsTransitioningFilter(false);
     };
-  }, [search, typeFilter, generationFilter]);
+  }, [search, typeFilter, generationFilter, filteredPokemons]);
 
   return (
     <main className="p-6">
