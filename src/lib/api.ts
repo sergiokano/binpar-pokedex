@@ -49,6 +49,7 @@ export async function normalizePokemonData(
 async function tryFetchSpecies(name: string): Promise<Response> {
   const res = await fetch(`${BASE_URL}/pokemon-species/${name}`);
   if (res.ok) return res;
+  throw new Error(`No se encontró la especie: ${name}`);
 }
 
 export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
