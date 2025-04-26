@@ -14,6 +14,15 @@ import {
 import { typeColors } from "@/lib/pokemonStyles";
 import type { Pokemon } from "@/lib/types";
 
+interface PokemonStat {
+  name: string;
+  value: number;
+}
+interface PokemonEvolution {
+  name: string;
+  sprite: string;
+}
+
 export default function PokemonPage() {
   // const { name } = useParams();
 
@@ -84,7 +93,7 @@ export default function PokemonPage() {
               Evoluciones
             </h2>
             <div className="flex flex-wrap gap-5">
-              {pokemon.evolutions.map((evo: any) => (
+              {pokemon.evolutions.map((evo: PokemonEvolution) => (
                 <Link
                   href={`/pokemon/${evo.name}`}
                   key={evo.name}
@@ -117,7 +126,7 @@ export default function PokemonPage() {
             Estadísticas
           </h2>
           <div className="space-y-3">
-            {pokemon.stats.map((s: any) => (
+            {pokemon.stats.map((s: PokemonStat) => (
               <div key={s.name} className="flex items-center gap-4 text-sm">
                 <span className="w-24 text-right text-zinc-600 capitalize">
                   {statTranslations[s.name] ?? s.name.replace("-", " ")}

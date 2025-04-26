@@ -1,6 +1,9 @@
 import { BASE_URL } from "./constants";
 import type { NormalizedPokemon, PokemonIndexed } from "./types";
-
+interface EvolutionNode {
+  species: { name: string };
+  evolves_to: EvolutionNode[];
+}
 
 export async function fetchPokemonNames(limit = 1300): Promise<string[]> {
   const res = await fetch(`${BASE_URL}/pokemon?limit=${limit}`);
@@ -37,7 +40,7 @@ export async function normalizePokemonData(
   return {
     id: details.id,
     name: details.name,
-    types: details.types.map((t: any) => t.type.name),
+    types: details.types.map((t: { type: { name: string } }) => t.type.name),
     sprite: details.sprites.other["official-artwork"].front_default,
     generation: species.generation?.name || "unknown",
   };
@@ -54,7 +57,7 @@ export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
   const evoChainRes = await fetch(`${BASE_URL}/evolution-chain?limit=500`);
   const evoChainData = await evoChainRes.json();
   const evoChainUrls: string[] = evoChainData.results.map(
-    (chain: any) => chain.url,
+    (chain: { url: string }) => chain.url,
   );
   for (const url of evoChainUrls) {
     try {
@@ -67,11 +70,6 @@ export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
           const generation = await fetchPokemonGeneration(name);
 
           try {
-            // const resSpecies = await fetch(
-            //   `${BASE_URL}/pokemon-species/${name}`,
-            // );
-            const resSpecies = "unknow";
-            // const speciesData = await resSpecies.json();
             index.push({
               name,
               generation,
@@ -89,10 +87,10 @@ export async function fetchFullPokemonIndex(): Promise<PokemonIndexed[]> {
   return index;
 }
 
-function extractEvolutionNames(chain: any): string[] {
+function extractEvolutionNames(chain: EvolutionNode): string[] {
   const names: string[] = [];
 
-  function traverseEvolutions(evolution: any) {
+  function traverseEvolutions(evolution: EvolutionNode) {
     if (!evolution) return;
     names.push(evolution.species.name);
     evolution.evolves_to?.forEach(traverseEvolutions);
@@ -119,15 +117,18 @@ export async function getPokemonDetail(name: string) {
     name: data.name,
     sprite: data.sprites.other["official-artwork"].front_default,
     generation: species.generation.name,
-    types: data.types.map((t: any) => t.type.name),
-    stats: data.stats.map((s: any) => ({
-      name: s.stat.name,
-      value: s.base_stat,
-    })),
+    types: data.types.map((t: { type: { name: string } }) => t.type.name),
+    stats: data.stats.map(
+      (s: { stat: { name: string }; base_stat: number }) => ({
+        name: s.stat.name,
+        value: s.base_stat,
+      }),
+    ),
     evolutions: evolutions ?? [],
   };
 }
-function extractEvolutionChainWithSprites(chain: any) {
+
+function extractEvolutionChainWithSprites(chain: EvolutionNode) {
   const evolutions: { name: string; sprite: string }[] = [];
 
   async function getSprite(name: string) {
@@ -136,7 +137,7 @@ function extractEvolutionChainWithSprites(chain: any) {
     return data.sprites.other["official-artwork"].front_default;
   }
 
-  async function traverse(node: any) {
+  async function traverse(node: EvolutionNode) {
     const name = node.species.name;
     const sprite = await getSprite(name);
     evolutions.push({ name, sprite });

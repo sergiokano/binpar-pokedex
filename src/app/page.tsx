@@ -65,7 +65,7 @@ export default function HomePage() {
       });
 
       setIsTransitioningFilter(false);
-    }, 1); 
+    }, 1);
 
     return () => clearTimeout(initialTimeout);
   }, [fullPokedex]);
@@ -104,7 +104,9 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    if (!filteredPokemons.length) return;
+    if (!search && !typeFilter && !generationFilter) return;
+
+    if (!source.length) return;
 
     setIsTransitioningFilter(true);
 
@@ -131,7 +133,7 @@ export default function HomePage() {
       setIsCardLoading({});
       setIsTransitioningFilter(false);
     };
-  }, [search, typeFilter, generationFilter, filteredPokemons]);
+  }, [search, typeFilter, generationFilter]);
 
   return (
     <main className="p-6">
@@ -177,7 +179,14 @@ export default function HomePage() {
         <>
           <div ref={observerRef} className="h-10" />
           {isFetchingNextPage && (
-            <p className="mt-4 text-center">Cargando más Pokémon...</p>
+            <div className="mt-6 flex justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-indigo-500"></div>
+                <span className="text-sm text-zinc-500">
+                  Cargando más Pokémon...
+                </span>
+              </div>
+            </div>
           )}
         </>
       )}
