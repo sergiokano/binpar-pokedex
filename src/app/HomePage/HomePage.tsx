@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useInfinitePokemon } from "@/hooks/useInfiniteQuery";
 import { useFullPokemonIndex } from "@/hooks/useFullPokemonIndex";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +11,8 @@ import PokemonCard from "@/components/PokemonCard/PokemonCard";
 import SkeletonPokemonCard from "@/components/Skeleton/SkeletonPokemonCard/SkeletonPokemonCard";
 import SkeletonPokemonCards from "@/components/Skeleton/SkeletonPokemonCard/SkeletonPokemonCards";
 import { loadFullPokedex } from "@/server/loadFullPokedex";
+
+const ITEMS_PER_PAGE = 20;
 
 export default function HomePage() {
   const { data: fullIndex } = useFullPokemonIndex();
@@ -29,11 +31,23 @@ export default function HomePage() {
 
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [typeFilter, setTypeFilter] = useState(searchParams.get("type") ?? "");
   const [generationFilter, setGenerationFilter] = useState(
     searchParams.get("generation") ?? "",
   );
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reiniciar estados cuando se navega a la página principal
+  useEffect(() => {
+    if (pathname === "/" && !searchParams.toString()) {
+      setSearch("");
+      setTypeFilter("");
+      setGenerationFilter("");
+      setCurrentPage(1);
+    }
+  }, [pathname, searchParams]);
 
   const isFiltering = Boolean(search || typeFilter || generationFilter);
 
@@ -54,10 +68,12 @@ export default function HomePage() {
     return (nameMatch || familyMatch) && typeMatch && genMatch;
   });
 
+  const paginatedPokemons = isFiltering
+    ? filteredPokemons.slice(0, currentPage * ITEMS_PER_PAGE)
+    : filteredPokemons;
+
   const [isTransitioningFilter, setIsTransitioningFilter] = useState(true);
-  const [isCardLoading, setIsCardLoading] = useState<Record<number, boolean>>(
-    {},
-  );
+  const [isCardLoading, setIsCardLoading] = useState<Record<number, boolean>>({});
 
   // Este efecto es SOLO para la primera carga si no hay filtros activos
   useEffect(() => {
@@ -87,20 +103,32 @@ export default function HomePage() {
   }, [fullPokedex]);
 
   useEffect(() => {
-    if (isFiltering) return;
+    if (isFiltering) {
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry?.isIntersecting && paginatedPokemons.length < filteredPokemons.length) {
+          setCurrentPage((prev) => prev + 1);
+        }
+      });
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry?.isIntersecting && hasNextPage) {
-        fetchNextPage();
-      }
-    });
+      if (observerRef.current) observer.observe(observerRef.current);
 
-    if (observerRef.current) observer.observe(observerRef.current);
+      return () => {
+        if (observerRef.current) observer.unobserve(observerRef.current);
+      };
+    } else {
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry?.isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      });
 
-    return () => {
-      if (observerRef.current) observer.unobserve(observerRef.current);
-    };
-  }, [hasNextPage, fetchNextPage, isFiltering]);
+      if (observerRef.current) observer.observe(observerRef.current);
+
+      return () => {
+        if (observerRef.current) observer.unobserve(observerRef.current);
+      };
+    }
+  }, [hasNextPage, fetchNextPage, isFiltering, paginatedPokemons.length, filteredPokemons.length]);
 
   useEffect(() => {
     if (!search && !typeFilter && !generationFilter) return;
@@ -108,13 +136,14 @@ export default function HomePage() {
     if (!source.length) return;
 
     setIsTransitioningFilter(true);
+    setCurrentPage(1);
 
     const transitionTimeout = setTimeout(() => {
       const loadingMap: Record<number, boolean> = {};
-      filteredPokemons.forEach((p) => (loadingMap[p.id] = true));
+      paginatedPokemons.forEach((p) => (loadingMap[p.id] = true));
       setIsCardLoading(loadingMap);
 
-      filteredPokemons.forEach((p, i) => {
+      paginatedPokemons.forEach((p, i) => {
         setTimeout(() => {
           setIsCardLoading((prev) => {
             const updated = { ...prev };
@@ -164,7 +193,7 @@ export default function HomePage() {
         {isTransitioningFilter ? (
           <SkeletonPokemonCards amount={30} />
         ) : (
-          filteredPokemons.map((pokemon) =>
+          paginatedPokemons.map((pokemon) =>
             isCardLoading[pokemon.id] ? (
               <SkeletonPokemonCard key={`skeleton-${pokemon.id}`} />
             ) : (
@@ -174,20 +203,16 @@ export default function HomePage() {
         )}
       </section>
 
-      {!isFiltering && (
-        <>
-          <div ref={observerRef} className="h-10" />
-          {isFetchingNextPage && (
-            <div className="mt-6 flex justify-center">
-              <div className="flex flex-col items-center gap-2">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-indigo-500"></div>
-                <span className="text-sm text-zinc-500">
-                  Cargando más Pokémon...
-                </span>
-              </div>
-            </div>
-          )}
-        </>
+      <div ref={observerRef} className="h-10" />
+      {(isFetchingNextPage || (isFiltering && paginatedPokemons.length < filteredPokemons.length)) && (
+        <div className="mt-6 flex justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-indigo-500"></div>
+            <span className="text-sm text-zinc-500">
+              Cargando más Pokémon...
+            </span>
+          </div>
+        </div>
       )}
     </main>
   );

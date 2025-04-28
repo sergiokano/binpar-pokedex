@@ -4,6 +4,7 @@ import type { NormalizedPokemon } from "@/lib/types";
 import { fetchPokemonNames } from "@/lib/api";
 import pLimit from "p-limit";
 import { BASE_URL } from "@/lib/constants";
+import { SPECIES_EXCEPTIONS } from "@/lib/species-exceptions";
 
 let cache: NormalizedPokemon[] | null = null;
 
@@ -44,11 +45,10 @@ export async function normalizePokemonData(
 
 // Maneja casos como "pikachu-original-cap", etc.
 async function tryFetchSpecies(name: string): Promise<Response> {
-  const res = await fetch(`${BASE_URL}/pokemon-species/${name}`);
-  if (res.ok) return res;
-
-  const fallback = getFallbackName(name);
-  return await fetch(`${BASE_URL}/pokemon-species/${fallback}`);
+  if (SPECIES_EXCEPTIONS.includes(name)) {
+    return new Response(null, { status: 404 });
+  }
+  return fetch(`${BASE_URL}/pokemon-species/${name}`);
 }
 
 function getFallbackName(name: string): string {

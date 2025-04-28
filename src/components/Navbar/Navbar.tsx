@@ -30,7 +30,7 @@ export default function Navbar() {
             Inicio
           </Link>
           <Link
-            href="https://github.com/sergiokano"
+            href="https://github.com/sergiokano/binpar-pokedex"
             target="_blank"
             className="rounded-full px-3 py-2 transition hover:bg-zinc-100"
           >
