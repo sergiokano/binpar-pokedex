@@ -3,6 +3,8 @@
 A beautiful, fast and interactive Pokédex built with **T3 Stack**, **TypeScript**, **Next.js** and **TailwindCSS**, following minimal aesthetics.  
 Designed for a smooth user experience with rich filtering, animated transitions, and clean UI components.
 
+https://binpar-pokedex.vercel.app/
+
 ---
 
 ## 🛠️ Technologies Used
